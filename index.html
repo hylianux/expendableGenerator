@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div class="container" data-bind="foreach: rooms">
+            <div class="row">
+                <div class="col-sm-12">
+                    <h3 data-bind="text: name"></h3>
+                    <div class="row" data-bind="foreach: enemies">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <span data-bind="text: name"></span> - <span data-bind="text: role.name"></span>
+                                </div>
+                            </div>
+                            <div class="row" data-bind="foreach: stats">
+                                <div class="col">
+                                    <span data-bind="text: name"></span> - <span data-bind="text: value"></span>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-min.js"></script>
+        <script>
+            function ViewModel () {
+                let self = this;
+                self.rooms = ko.observableArray([]);
+                $.getJSON('/rooms', data => {
+                    self.rooms(data);
+                });
+            };
+            ko.applyBindings(new ViewModel());
+        </script>
+    </body>
+</html>
