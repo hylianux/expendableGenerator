@@ -1,35 +1,34 @@
 {
-    "name": "rollforme",
-    "version": "1.0.0",
-    "description": "",
-    "main": "dist/index.js",
-    "scripts": {
-        "test": "concurrently --kill-others \"onchange -i src/**/* -- npm run build:all\" \"nodemon index.js\"",
-        "start": "node index.js",
-        "build:prettyjs": "prettier-eslint --config .prettierrc --write *.js",
-        "build-start": "npm run build:prettyjs && npm start"
-    },
-    "//": [
-        "use npm test to do actual development work, it'll track your changes and automatically update itself",
-        "use npm run build-start to build the app and start it all in one go"
-    ],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "body-parser": "^1.18.3",
-        "express": "^4.17.1"
-    },
-    "devDependencies": {
-        "concurrently": "^4.1.0",
-        "eslint": "^5.15.3",
-        "eslint-config-standard": "^12.0.0",
-        "eslint-plugin-import": "^2.16.0",
-        "eslint-plugin-node": "^8.0.1",
-        "eslint-plugin-promise": "^4.0.1",
-        "eslint-plugin-standard": "^4.0.0",
-        "nodemon": "^1.18.10",
-        "prettier": "^1.16.4",
-        "prettier-eslint": "^8.8.2",
-        "prettier-eslint-cli": "^4.7.1"
-    }
+  "name": "rollforme",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "npm run build:prettyjs && nodemon index.js",
+    "start": "npm run build:prettyjs && node index.js",
+    "build:prettyjs": "prettier-eslint --config .prettierrc --write *.js"
+  },
+  "//": [
+    "use npm test to do actual development work, it'll track your changes and automatically update itself",
+    "use npm run build-start to build the app and start it all in one go"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "eslint": "^5.15.3",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "nodemon": "^1.18.10",
+    "prettier": "^1.16.4",
+    "prettier-eslint": "^8.8.2",
+    "prettier-eslint-cli": "^4.7.1"
+  }
 }
