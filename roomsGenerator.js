@@ -1,13 +1,26 @@
-function getArrayOutput(x) {
-  if (x instanceof Array) {
-    let output = '[';
-    x.forEach(element => {
-      output += `${element},`;
-    });
-    output = output.substring(0, output.length - 1);
-    output += `]`;
-  } else {
-    throw `Expected an Array, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+class RoomsError extends Error {
+  constructor(message, obj, array) {
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, RoomsError);
+    }
+    if (obj) {
+      message += `\ninstead got [constructor: ${obj.constructor.name}, type: ${typeof obj}, value: ${obj}]`;
+    } else if (array) {
+      message += `\n${this.getArrayOutput(Stats)} and instead got [${obj}]`;
+    }
+    super(message);
+  }
+  static getArrayOutput(x) {
+    if (x instanceof Array) {
+      let output = '[';
+      x.forEach(element => {
+        output += `${element},`;
+      });
+      output = output.substring(0, output.length - 1);
+      output += `]`;
+    } else {
+      throw new RoomsError('Expected an Array', x);
+    }
   }
 }
 class Skill {
@@ -22,7 +35,7 @@ class Skill {
     if (typeof x === 'string' || x instanceof String) {
       this._name = x;
     } else {
-      throw `Expected string type for skill name, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError('Expected string type for skill name.', x);
     }
   }
   get value() {
@@ -32,8 +45,15 @@ class Skill {
     if (typeof x === 'number' || x instanceof Number) {
       this._value = x;
     } else {
-      throw `Expected Number type for skill value, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError('Expected number type for skill name.', x);
     }
+  }
+  serialize() {
+    let skill = {
+      name: this.name,
+      value: this.value,
+    };
+    return skill;
   }
 }
 class Stat {
@@ -49,12 +69,10 @@ class Stat {
       if (Stats.indexOf(x) > -1) {
         this._name = x;
       } else {
-        throw `Expected one of the stats listed in the Stats constant ${getArrayOutput(Stats)} and instead got ${x}\n${
-          new Error().stack
-        }`;
+        throw new RoomsError(`Expected one of the stats listed in the Stats constant`, x, Stats);
       }
     } else {
-      throw `Expected string type for stat name, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected string type for stat name`, x);
     }
   }
   get value() {
@@ -64,7 +82,7 @@ class Stat {
     if (typeof x === 'number' || x instanceof Number) {
       this._value = x;
     } else {
-      throw `Expected Number type for stat value, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Number type for stat value`, x);
     }
   }
   static generateStat(name) {
@@ -79,10 +97,15 @@ class Stat {
         }
       } while (result > 10);
     } else {
-      throw `Expected one of the stats listed in the Stats constant ${getArrayOutput(Stats)} and instead got ${name}\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected one of the stats listed in the Stats constant`, name, Stats);
     }
+  }
+  serialize() {
+    let stat = {
+      name: this.name,
+      value: this.value,
+    };
+    return stat;
   }
 }
 class Role {
@@ -98,16 +121,10 @@ class Role {
       if (Roles.indexOf(x) > -1) {
         this._name = x;
       } else {
-        let output = `Expected one of the roles listed in the Roles constant for role name [`;
-        Roles.forEach(role => {
-          output += `${role},`;
-        });
-        output = output.substring(0, output.length - 1);
-        output += `], instead got ${x}\n${new Error().stack}`;
-        throw output;
+        throw new RoomsError(`Expected one of the roles listed in the Roles constant for role name`, x, Roles);
       }
     } else {
-      throw `Expected string type for role name, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected string type for role name`, x);
     }
   }
   get skills() {
@@ -123,7 +140,7 @@ class Role {
         }
       });
     } else {
-      throw `Expected Array type for role skills, [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Array type for role skills`, x);
     }
   }
   addSkill(skill) {
@@ -133,9 +150,7 @@ class Role {
       }
       this._skills.push(skill);
     } else {
-      throw `Expected Skill(name: string, value: number) type for adding a skill to role, instead got [constructor: ${
-        skill.constructor.name
-      }, type: ${typeof skill}, value: ${skill}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Skill() type for adding a skill to role`, skill);
     }
   }
   static stirUpSkills(skills) {
@@ -157,31 +172,29 @@ class Role {
   }
   generatePickupSkills(weapons, pickupPoints) {
     if (!(typeof pickupPoints === 'number' || pickupPoints instanceof Number)) {
-      throw `Expected type Number for pickupPoints in generatePickupSkills, instead got [type: ${typeof pickupPoints}, value: ${pickupPoints}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected type Number for pickupPoints in generatePickupSkills`, pickupPoints);
     } else {
       if (!(weapons instanceof Array)) {
-        throw `Expected type Array for weapons in generatePickupSkills, instead got [type: ${typeof weapons}, value: ${weapons}]\n${
-          new Error().stack
-        }`;
+        throw new RoomsError(`Expected type Array for weapons in generatePickupSkills`, weapons);
       } else {
         let newSkills = [];
         // first let's see if you got skills enough to use your weapons...
         weapons.forEach(weapon => {
           if (!(weapon instanceof Weapon)) {
-            throw `Expected type Weapon for weapon in generatedPickupSkills, instead got [constructor: ${
-              weapon.constructor.name
-            }, type: ${typeof weapon}, value: ${weapon}]\n${new Error().stack}`;
+            throw new RoomsError(`Expected type Weapon for weapon in generatePickupSkills`, weapon);
           } else {
+            let hasWeaponSkill = false;
             this.skills.forEach(skill => {
               if (skill.name === weapon.skill) {
-                let thisSkill = new Skill(weapon.skill, 0);
-                if (newSkills.indexOf(thisSkill) < 0) {
-                  newSkills.push(thisSkill);
-                }
+                hasWeaponSkill = true;
               }
             });
+            if (!hasWeaponSkill) {
+              let thisSkill = new Skill(weapon.skill, 0);
+              if (newSkills.indexOf(thisSkill) < 0) {
+                newSkills.push(thisSkill);
+              }
+            }
           }
         });
         // mkay, now i need a way to determine how many extra skills to add
@@ -237,7 +250,7 @@ class Role {
       switch (rolestring) {
         case Roles[0]:
           skills.push(new Skill('Jury Rig', 4));
-          skills.push(new Skill('Awareness/Notice', 4));
+          skills.push(new Skill('Awareness / Notice', 4));
           skills.push(new Skill('Basic Tech', 4));
           skills.push(new Skill('CyberTech', 4));
           skills.push(new Skill('Teaching', 4));
@@ -249,7 +262,7 @@ class Role {
           break;
         case Roles[1]:
           skills.push(new Skill('Family', 4));
-          skills.push(new Skill('Awareness/Notice', 4));
+          skills.push(new Skill('Awareness / Notice', 4));
           skills.push(new Skill('Endurance', 4));
           skills.push(new Skill('Melee', 4));
           skills.push(new Skill('Rifle', 4));
@@ -261,7 +274,7 @@ class Role {
           break;
         case Roles[2]:
           skills.push(new Skill('Combat Sense', 4));
-          skills.push(new Skill('Awareness/Notice', 4));
+          skills.push(new Skill('Awareness / Notice', 4));
           skills.push(new Skill('Handgun', 4));
           skills.push(new Skill('Brawling', 4));
           skills.push(new Skill('Melee', 4));
@@ -275,10 +288,19 @@ class Role {
       this.stirUpSkills(skills);
       return new Role(rolestring, skills);
     } else {
-      throw `Expected one of the roles listed in the Roles constant ${getArrayOutput(Roles)} and instead got ${x}\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected one of the roles listed in the Roles constant.`, x, Roles);
     }
+  }
+  serialize() {
+    let role = {
+      name: this.name,
+    };
+    let skills = [];
+    this.skills.forEach(skill => {
+      skills.push(skill.serialize());
+    });
+    role.skills = skills;
+    return role;
   }
 }
 class Weapon {
@@ -300,7 +322,7 @@ class Weapon {
     if (typeof x === 'string' || x instanceof String) {
       this._name = x;
     } else {
-      throw `Expected string type for weapon name, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected string type for weapon name`, x);
     }
   }
   get skill() {
@@ -310,9 +332,7 @@ class Weapon {
     if (typeof x === 'string' || x instanceof String) {
       this._skill = x;
     } else {
-      throw `Expected string type for weapon's associated skill, [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected string type for weapon's associated skill`, x);
     }
   }
   get accuracy() {
@@ -322,9 +342,7 @@ class Weapon {
     if (typeof x === 'number' || x instanceof Number) {
       this._accuracy = x;
     } else {
-      throw `Expected Number type for weapon accuracy, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected Number type for weapon accuracy`, x);
     }
   }
   get damage() {
@@ -334,9 +352,7 @@ class Weapon {
     if (typeof x === 'string' || x instanceof String) {
       this._damage = x;
     } else {
-      throw `Expected string type for weapon damage, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected string type for weapon damage`, x);
     }
   }
   get ammunition() {
@@ -346,9 +362,7 @@ class Weapon {
     if (typeof x === 'string' || x instanceof String) {
       this._ammunition = x;
     } else {
-      throw `Expected string type for weapon ammunition type, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected string type for weapon ammunition type`, x);
     }
   }
   get numberOfShots() {
@@ -358,9 +372,7 @@ class Weapon {
     if (typeof x === 'number' || x instanceof Number) {
       this._numberOfShots = x;
     } else {
-      throw `Expected Number type for weapon's number of shots, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected Number type for weapon's number of shots`, x);
     }
   }
   get rateOfFire() {
@@ -370,9 +382,7 @@ class Weapon {
     if (typeof x === 'number' || x instanceof Number) {
       this._rateOfFire = x;
     } else {
-      throw `Expected Number type for weapon rate of fire, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected Number type for weapon rate of fire`, x);
     }
   }
   get reliability() {
@@ -394,13 +404,11 @@ class Weapon {
           errorOutput += i + ',';
         }
         errorOutput = errorOutput.substring(0, errorOutput.length - 1);
-        errorOutput += `], instead got ${x}\n${new Error().stack}`;
-        throw errorOutput;
+        errorOutput += `]`;
+        throw new RoomsError(errorOutput, x);
       }
     } else {
-      throw `Expected Number type for weapon reliability, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected Number type for weapon reliability`, x);
     }
   }
   get range() {
@@ -410,8 +418,22 @@ class Weapon {
     if (typeof x === 'number' || x instanceof Number) {
       this._range = x;
     } else {
-      throw `Expected Number type for weapon range, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Number type for weapon range`, x);
     }
+  }
+  serialize() {
+    let weapon = {
+      name: this.name,
+      skill: this.skill,
+      accuracy: this.accuracy,
+      damage: this.damage,
+      ammunition: this.ammunition,
+      numberOfShots: this.numberOfShots,
+      rateOfFire: this.rateOfFire,
+      reliability: this.reliability, // VR = 3, ST = 5, UR = 8
+      range: this.range,
+    };
+    return weapon;
   }
 }
 class Armor {
@@ -428,7 +450,7 @@ class Armor {
     if (typeof x === 'string' || x instanceof String) {
       this._name = x;
     } else {
-      throw `Expected string type for armor name, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected string type for armor name`, x);
     }
   }
   get covers() {
@@ -444,7 +466,7 @@ class Armor {
         }
       }
     } else {
-      throw `Expected Array type for armor covers, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Array type for armor covers`, x);
     }
   }
   addCover(x) {
@@ -454,9 +476,7 @@ class Armor {
       }
       this._covers.push(x);
     } else {
-      throw `Expected string type for armor cover type, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected string type for armor cover type`, x);
     }
   }
   get sp() {
@@ -466,9 +486,7 @@ class Armor {
     if (typeof x === 'number' || x instanceof Number) {
       this._sp = x;
     } else {
-      throw `Expected Number type for armor stopping power (sp), [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected Number type for armor stopping power (sp)`, x);
     }
   }
   get ev() {
@@ -478,10 +496,17 @@ class Armor {
     if (typeof x === 'number' || x instanceof Number) {
       this._ev = x;
     } else {
-      throw `Expected Number type for armor encumbrance value (ev), instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected Number type for armor encumbrance value (ev)`, x);
     }
+  }
+  serialize() {
+    let armor = {
+      name: this.name,
+      covers: this.covers,
+      sp: this.sp,
+      ev: this.ev,
+    };
+    return armor;
   }
 }
 class Gear {
@@ -501,9 +526,7 @@ class Gear {
     if (x instanceof Armor) {
       this._armor = x;
     } else {
-      throw `Expected Armor() type for gear armor, instead got [constructor: ${
-        x.constructor.name
-      }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Armor() type for gear armor`, x);
     }
   }
   get weapons() {
@@ -519,9 +542,7 @@ class Gear {
         }
       });
     } else {
-      throw `Expected Array type for gear weapons, instead got [constructor: ${
-        x.constructor.name
-      }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Array type for gear weapons`, x);
     }
   }
   addWeapon(weapon) {
@@ -531,15 +552,13 @@ class Gear {
       }
       this._weapons.push(weapon);
     } else {
-      throw `Expected Weapon() type for gear weapons, instead got [constructor: ${
-        weapon.constructor.name
-      }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Weapon() type for gear weapons`, x);
     }
   }
-  get cyberware() {
-    return this._cyberware;
+  get cyberwares() {
+    return this._cyberwares;
   }
-  set cyberware(x) {
+  set cyberwares(x) {
     if (x instanceof Array) {
       x.forEach(cyberware => {
         try {
@@ -549,21 +568,17 @@ class Gear {
         }
       });
     } else {
-      throw `Expected Array type for gear cyberware, instead got [constructor: ${
-        x.constructor.name
-      }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Array type for gear cyberware`, x);
     }
   }
   addCyberware(x) {
     if (x instanceof Cyberware) {
-      if (!this._cyberware) {
-        this._cyberware = [];
+      if (!this._cyberwares) {
+        this._cyberwares = [];
       }
-      this._cyberware.push(x);
+      this._cyberwares.push(x);
     } else {
-      throw `Expected Cyberware() type for gear cyberware, instead got [constructor: ${
-        x.constructor.name
-      }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Cyberware() type for gear cyberware`, x);
     }
   }
   addToGear(x) {
@@ -573,9 +588,7 @@ class Gear {
       } else if (x instanceof Cyberware) {
         this.addCyberware(gear);
       } else {
-        throw `Expected Weapon() or Cyberware() type for adding to gear, instead got [constructor: ${
-          x.constructor.name
-        }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+        throw new RoomsError(`Expected Weapon() or Cyberware() type for adding to gear`, x);
       }
     };
     if (x instanceof Array) {
@@ -585,27 +598,28 @@ class Gear {
     } else if (x instanceof Weapon || x instanceof Cyberware) {
       handleIndividual(x);
     } else {
-      throw `Expected Array of Weapon() or Cyberware(), or single Weapon() or single Cyberware() type for adding to gear, instead got [constructor: ${
-        x.constructor.name
-      }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(
+        `Expected Array of Weapon() or Cyberware(), or single Weapon() or single Cyberware() type for adding to gear`,
+        x
+      );
     }
   }
   static generateGear(difficulty, role) {
     let difficultyOk = typeof difficulty === 'number' || difficulty instanceof Number;
     let roleOk = typeof role === 'string' || role instanceof String;
     if (!difficultyOk || !roleOk) {
-      throw `${
-        difficultyOk
-          ? ''
-          : `Expected Number type for difficulty, instead got [type: ${typeof difficulty}, value: ${difficulty} `
-      }${
-        roleOk ? '' : `Expected string for role, instead got [type: ${typeof role}, value: ${role} `
-      }for generating gear\n${new Error().stack}`;
+      throw new RoomsError(
+        `${
+          difficultyOk
+            ? ''
+            : `Expected Number type for difficulty, instead got [type: ${typeof difficulty}, value: ${difficulty} `
+        }${
+          roleOk ? '' : `Expected string for role, instead got [type: ${typeof role}, value: ${role} `
+        }for generating gear`
+      );
     } else {
       if (Roles.indexOf(role) < 0) {
-        throw `Expected one of predefined roles ${getArrayOutput(Roles)} for generating gear, instead got [${role}]\n${
-          new Error().stack
-        }`;
+        throw new RoomsError(`Expected one of predefined roles for generating gear`, role, Roles);
       } else {
         let weapon = null;
         let armor = null;
@@ -665,6 +679,24 @@ class Gear {
       }
     }
   }
+  serialize() {
+    let gear = {
+      armor: this.armor.serialize(),
+    };
+    let weapons = [];
+    let cyberwares = [];
+    this.weapons.forEach(weapon => {
+      weapons.push(weapon.serialize());
+    });
+    if (this.cyberwares) {
+      this.cyberwares.forEach(cyberware => {
+        cyberwares.push(cyberware.serialize());
+      });
+    }
+    gear.weapons = weapons;
+    gear.cyberwares = cyberwares;
+    return gear;
+  }
 }
 class Cyberware {
   constructor(name, skill, value) {
@@ -679,9 +711,7 @@ class Cyberware {
     if (typeof x === 'string' || x instanceof String) {
       this._name = x;
     } else {
-      throw `Expected string type for cyberware name, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected string type for cyberware name`, x);
     }
   }
   get skill() {
@@ -691,9 +721,7 @@ class Cyberware {
     if (typeof x === 'string' || x instanceof String) {
       this._skill = x;
     } else {
-      throw `Expected string type for cyberware associated skill, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected string type for cyberware associated skill`, x);
     }
   }
   get value() {
@@ -703,29 +731,25 @@ class Cyberware {
     if (typeof x === 'number' || x instanceof Number) {
       this._value = x;
     } else {
-      throw `Expected Number type for cyberware associated skill value, instead got [type: ${typeof x}, value: ${x}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected Number type for cyberware associated skill value`, x);
     }
   }
   static generateCyberware(role, gear) {
     let gearOk = gear instanceof Gear;
     let roleOk = typeof role === 'string' || role instanceof String;
     if (!gearOk || !roleOk) {
-      throw `${
-        gearOk
-          ? ''
-          : `Expected Gear() type for cyberware generator, instead got: [constructor: ${
-              gear.constructor.name
-            }, type: ${typeof gear}, value: ${gear}]`
-      }${roleOk ? '' : `Expected string for role, instead got [type: ${typeof role}, value: ${role} `}\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(
+        `${
+          gearOk
+            ? ''
+            : `Expected Gear() type for cyberware generator, instead got: [constructor: ${
+                gear.constructor.name
+              }, type: ${typeof gear}, value: ${gear}]`
+        }${roleOk ? '' : `Expected string for role, instead got [type: ${typeof role}, value: ${role} `}`
+      );
     } else {
       if (Roles.indexOf(role) < 0) {
-        throw `Expected role to be in predefined roles ${getArrayOutput(
-          Roles
-        )} for generating Cyberware, instead got [${role}]\n${new Error().stack}`;
+        throw new RoomsError(`Expected role to be in predefined roles for generating Cyberware`, role, Roles);
       }
       let iterations = 3;
       if (role === Roles[2]) {
@@ -834,6 +858,14 @@ class Cyberware {
       }
     }
   }
+  serialize() {
+    let cyberware = {
+      name: this.name,
+      skill: this.skill,
+      value: this.value,
+    };
+    return cyberware;
+  }
 }
 const Stats = ['int', 'ref', 'tech', 'cool', 'att', 'luck', 'ma', 'body', 'emp'];
 const Roles = ['techie', 'nomad', 'solo'];
@@ -921,7 +953,7 @@ class Enemy {
     if (typeof x === 'string' || x instanceof String) {
       this._name = x;
     } else {
-      throw `Expected string type for enemy name, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected string type for enemy name`, x);
     }
   }
   get role() {
@@ -931,9 +963,7 @@ class Enemy {
     if (x instanceof Role) {
       this._role = x;
     } else {
-      throw `Expected Role() type for enemy role, instead got [constructor: ${
-        x.constructor.name
-      }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Role() type for enemy role`, x);
     }
   }
   get stats() {
@@ -948,13 +978,11 @@ class Enemy {
         if (stat instanceof Stat) {
           this._stats.push(stat);
         } else {
-          throw `Expected Stat() type for enemy stats, instead got [constructor: ${
-            stat.constructor.name
-          }, type: ${typeof stat}, value: ${stat}]`;
+          throw new RoomsError(`Expected Stat() type for enemy stats`, stat);
         }
       });
     } else {
-      throw `Expected Array type for enemy stats, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Array type for enemy stats`, x);
     }
   }
   get gear() {
@@ -964,9 +992,7 @@ class Enemy {
     if (x instanceof Gear) {
       this._gear = x;
     } else {
-      throw `Expected Gear() type for enemy stats, instead got [constructor: ${
-        x.constructor.name
-      }, type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected Gear() type for enemy stats`, x);
     }
   }
   generateStats() {
@@ -975,6 +1001,19 @@ class Enemy {
       stats.push(Stat.generateStat(Stats[i]));
     }
     return stats;
+  }
+  serialize() {
+    let enemy = {
+      name: this.name,
+      role: this.role.serialize(),
+      gear: this.gear.serialize(),
+    };
+    let stats = [];
+    this.stats.forEach(stat => {
+      stats.push(stat.serialize());
+    });
+    enemy.stats = stats;
+    return enemy;
   }
 }
 
@@ -985,9 +1024,8 @@ class Room {
   constructor(name, enemyArray) {
     this.name = name;
     enemyArray.forEach((enemyType, difficulty) => {
-      let enemies = [];
       for (let i = 0; i < enemyType; ++i) {
-        let name = `type ${enemyType} - ${i}`;
+        let name = `${difficulty}-${i}`;
         this.addEnemy(new Enemy(name, difficulty));
       }
     });
@@ -999,7 +1037,7 @@ class Room {
     if (typeof x === 'string' || x instanceof String) {
       this._name = x;
     } else {
-      throw `Expected type string for room name, instead got [type: ${typeof x}, value: ${x}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected type string for room name`, x);
     }
   }
   get enemies() {
@@ -1007,9 +1045,7 @@ class Room {
   }
   set enemies(enemies) {
     if (!(enemies instanceof Array)) {
-      throw `Expected type Array for enemies in Room class, instead got: [type: ${typeof enemies}, value: ${enemies}]\n${
-        new Error().stack
-      }`;
+      throw new RoomsError(`Expected type Array for enemies in Room class`, enemies);
     } else {
       enemies.forEach(enemy => {
         try {
@@ -1022,9 +1058,7 @@ class Room {
   }
   addEnemy(enemy) {
     if (!(enemy instanceof Enemy)) {
-      throw `Expected type Enemy for adding enemy in Room class, instead got [constructor: ${
-        enemy.constructor.name
-      }, type: ${typeof enemy}, value: ${enemy}]\n${new Error().stack}`;
+      throw new RoomsError(`Expected type Enemy for adding enemy in Room class`, enemy);
     } else {
       if (!this._enemies) {
         this._enemies = [];
@@ -1032,36 +1066,17 @@ class Room {
       this._enemies.push(enemy);
     }
   }
+  serialize() {
+    let room = {
+      name: this.name,
+    };
+    let enemies = [];
+    this.enemies.forEach(enemy => {
+      enemies.push(enemy.serialize());
+    });
+    room.enemies = enemies;
+    return room;
+  }
 }
 
-let rooms = [
-  new Room('Green Armor Room', [0, 4]),
-  new Room('Computer Room', [2, 4]),
-  new Room('Acid Room', [3, 3, 2]),
-  new Room('Final Room', [4, 1, 1]),
-  new Room('Elevator Room', [0, 0, 1]),
-  new Room('Secret Elevator Room', [0, 1]),
-  new Room('Secret Acid Room', [0, 2]),
-];
 module.exports = Room;
-/*
-let output = '# Your generated Map Stats\n\n';
-rooms.forEach(room => {
-    output += '## ' + room.name + '\n\nEnemy Name|';
-    statNames.forEach(statName => {
-        output += statName + '|';
-    });
-    output = output.substring(0, output.lastIndexOf('|') + 1);
-    output += '\n---|---|---|---|---|---|---|---|---|---\n';
-    room.enemies.forEach(enemyType => {
-        enemyType.forEach(enemy => {
-            output += enemy.name;
-            enemy.stats.forEach(stat => {
-                output += '|' + stat.num;
-            });
-            output += '\n';
-        });
-    });
-    output += '\n';
-});
-*/

@@ -1,43 +1,290 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    </head>
-    <body>
-        <div class="container" data-bind="foreach: rooms">
+
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+
+<body>
+  <div class="container" data-bind="foreach: rooms">
+    <div class="row">
+      <div class="col-sm-12">
+        <h3 data-bind="text: name"></h3>
+        <div class="row" data-bind="foreach: enemies">
+          <div class="col-sm-3 border border-secondary">
+            <!-- name and role row-->
             <div class="row">
-                <div class="col-sm-12">
-                    <h3 data-bind="text: name"></h3>
-                    <div class="row" data-bind="foreach: enemies">
-                        <div class="col">
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <span data-bind="text: name"></span> - <span data-bind="text: role.name"></span>
-                                </div>
-                            </div>
-                            <div class="row" data-bind="foreach: stats">
-                                <div class="col">
-                                    <span data-bind="text: name"></span> - <span data-bind="text: value"></span>
-                                </div>
-                            </div>
-                            
-                        </div>
-                    </div>
-                </div>
+              <div class="col">
+                <h5>Name: <span data-bind="text: name"></span> Role: <span data-bind="text: role.name"></span></h5>
+              </div>
             </div>
+            <!-- stats row -->
+            <div class="row">
+              <!-- ko foreach: stats -->
+              <div class="col-sm-3 border border-secondary">
+                <span data-bind="text: name"></span><br /><span data-bind="text: value"></span>
+              </div>
+              <!-- /ko -->
+              <div class="col-sm-3 border border-secondary">
+                Run <br /><span data-bind="text: (stats[6].value*3)"></span>
+              </div>
+              <div class="col-sm-3 border border-secondary">
+                Leap <br /><span data-bind="text: Math.floor((stats[6].value*3)/4)"></span>
+              </div>
+              <div class="col-sm-3 border border-secondary">
+                Lift <br /><span data-bind="text: (stats[7].value*40)"></span>
+              </div>
+            </div>
+            <!-- armor headings row -->
+            <div class="row border border-secondary" style="font-size: 8pt;">
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary">Head<br>1</div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary">Torso<br>2-4</div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary">R.Arm<br>5</div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary">L.Arm<br>6</div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary">R.Leg<br>7-8</div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary">L.Leg<br>9-0</div>
+            </div>
+            <!-- armor values row -->
+            <div class="row border border-secondary" style="font-size: 8pt;">
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary"
+                data-bind="text: (gear.armor.covers.indexOf('head')<0?'0':gear.armor.sp)">
+              </div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary"
+                data-bind="text: (gear.armor.covers.indexOf('torso')<0?'0':gear.armor.sp)">
+              </div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary"
+                data-bind="text: (gear.armor.covers.indexOf('rightArm')<0?'0':gear.armor.sp)">
+              </div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary"
+                data-bind="text: (gear.armor.covers.indexOf('leftArm')<0?'0':gear.armor.sp)">
+              </div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary"
+                data-bind="text: (gear.armor.covers.indexOf('rightLeg')<0?'0':gear.armor.sp)">
+              </div>
+              <div style="padding-left: 10px;" class="col-sm-2 border border-secondary"
+                data-bind="text: (gear.armor.covers.indexOf('leftLeg')<0?'0':gear.armor.sp)">
+              </div>
+            </div>
+            <!-- save and btm row -->
+            <div class="row">
+              <div style="padding-left: 2px" class="col-sm-6 border border-secondary">
+                Save: <span data-bind="text: stats[7].value"></span>
+              </div>
+              <div class="col-sm-6 border border-secondary">
+                BTM: <span data-bind="text: $root.btm(stats[7].value); "></span>
+              </div>
+            </div>
+            <!-- damage row -->
+            <div class="row">
+              <div style="font-size: 8pt;" class="col-sm-12 border border-secondary">
+                <div class="row">
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Light
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Serious
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Critical
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Mortal0
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Mortal1
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=0
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=1
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=2
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=3
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=4
+                  </div>
+                </div>
+                <div class="row">
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Mortal2
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Mortal3
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Mortal4
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Mortal5
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Mortal6
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                  <div class="col-sm border border-secondary">
+                    <input type="checkbox" /><input type="checkbox" /><input type="checkbox" /><input type="checkbox" />
+                  </div>
+                </div>
+                <div class="row">
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=5
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=6
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=7
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=8
+                  </div>
+                  <div style="padding-left: 2px;" class="col-sm border border-secondary">
+                    Stun=9
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- cybernetics row -->
+            <div class="row border border-secondary">
+              <div class="col-sm-12">
+                Cybernetics:
+              </div>
+              <!-- ko foreach: gear.cyberwares-->
+              <div class="col-sm-12" style="font-size: 10pt;">
+                <span data-bind="text: name"></span>
+                <!-- ko if: skill!==''-->
+                - <span data-bind="text: skill"></span> +<span data-bind="text: value"></span>
+                <!-- /ko-->
+              </div>
+              <!-- /ko -->
+            </div>
+            <!-- skills row -->
+            <div class="row">
+              <div class="col-sm-12">
+                Skills:
+              </div>
+              <!-- ko foreach: role.skills-->
+              <div style="font-size: 8pt;" class="col-sm-4 border border-secondary">
+                <span data-bind="text: name"></span>:
+                <span data-bind="text: value"></span>
+              </div>
+              <!-- /ko -->
+            </div>
+            <!-- weapons row -->
+            <div class="row">
+              <div class="col-sm-12">Weapons: </div>
+              <!-- ko foreach: gear.weapons -->
+              <div style="font-size: 6pt;" class="col-sm-12.fluid">
+                <table class="table border border-secondary">
+                  <thead>
+                    <tr>
+                      <th class="border border-secondary" style="padding: 0px;">Name</th>
+                      <th class="border border-secondary" style="padding: 0px;">Skill</th>
+                      <th class="border border-secondary" style="padding: 0px;" title="Weapon Accuracy">WA</th>
+                      <th class="border border-secondary" style="padding: 0px;">Damage</th>
+                      <th class="border border-secondary" style="padding: 0px;">Ammo</th>
+                      <th class="border border-secondary" style="padding: 0px;">#Shots</th>
+                      <th class="border border-secondary" style="padding: 0px;" title="Rate of Fire">ROF</th>
+                      <th class="border border-secondary" style="padding: 0px;" title="Reliability">Rel.</th>
+                      <th class="border border-secondary" style="padding: 0px;">Range</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: name"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: skill"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: accuracy"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: damage"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: ammunition"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: numberOfShots"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: rateOfFire"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: reliability"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: range+'m'"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- /ko -->
+            </div>
+          </div>
         </div>
-        <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-min.js"></script>
-        <script>
-            function ViewModel () {
-                let self = this;
-                self.rooms = ko.observableArray([]);
-                $.getJSON('/rooms', data => {
-                    self.rooms(data);
-                });
-            };
-            ko.applyBindings(new ViewModel());
-        </script>
-    </body>
+      </div>
+    </div>
+  </div>
+  </div>
+  <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-min.js"></script>
+  <script>
+    function ViewModel() {
+      let self = this;
+      self.rooms = ko.observableArray([]);
+      self.btm = value => {
+        switch (value) {
+          case 1:
+          case 2:
+            return '-0';
+            break;
+          case 3:
+          case 4:
+            return '-1';
+            break;
+          case 5:
+          case 6:
+          case 7:
+            return '-2';
+            break;
+          case 8:
+          case 9:
+            return '-3';
+            break;
+          case 10:
+            return '-4';
+        }
+      };
+      $.getJSON('/rooms', data => {
+        self.rooms(data);
+      });
+    };
+    ko.applyBindings(new ViewModel());
+  </script>
+</body>
+
 </html>

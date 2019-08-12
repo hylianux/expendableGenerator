@@ -1,20 +1,17 @@
 'use strict';
-'use strict';
 const express = require('express');
 const defaultRouter = require('./defaultRouter');
-const bodyParser = require('body-parser');
 
 let app = express();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', defaultRouter);
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 
 const port = process.env.PORT || 3000;
 
-app.listen(port, err => {
-  if (err) {
-    console.error('error!', err);
-  }
+app.listen(port, () => {
   return console.info(`server is listening on port ${port}`);
 });

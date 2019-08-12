@@ -4,14 +4,9 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "npm run build:prettyjs && nodemon index.js",
     "start": "npm run build:prettyjs && node index.js",
     "build:prettyjs": "prettier-eslint --config .prettierrc --write *.js"
   },
-  "//": [
-    "use npm test to do actual development work, it'll track your changes and automatically update itself",
-    "use npm run build-start to build the app and start it all in one go"
-  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -26,7 +21,6 @@
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "nodemon": "^1.18.10",
     "prettier": "^1.16.4",
     "prettier-eslint": "^8.8.2",
     "prettier-eslint-cli": "^4.7.1"
