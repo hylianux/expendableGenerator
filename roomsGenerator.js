@@ -1,5 +1,6 @@
 class RoomsError extends Error {
   constructor(message, obj, array) {
+    super();
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, RoomsError);
     }
@@ -8,7 +9,7 @@ class RoomsError extends Error {
     } else if (array) {
       message += `\n${this.getArrayOutput(Stats)} and instead got [${obj}]`;
     }
-    super(message);
+    console.error(message);
   }
   static getArrayOutput(x) {
     if (x instanceof Array) {
@@ -154,19 +155,27 @@ class Role {
     }
   }
   static stirUpSkills(skills) {
-    for (let i = 0; i < 50; ++i) {
-      // find the index of the skill you wanna take a point from
-      let minus = Math.floor(Math.random() * skills.length);
-      // find the index of the skill you wanna add a point to
-      let plus = Math.floor(Math.random() * skills.length);
-      // if you can't take away from a skill, or if you can't add to the skill
-      // then start over
-      if (skills[minus].value < 2 || skills[plus].value > 9) {
-        --i;
-        continue;
-      } else {
-        skills[minus].value--;
-        skills[plus].value++;
+    let numUnmoveable = 0;
+    skills.forEach(skill => {
+      if (skill.value === 1 || skill.value === 10) {
+        numUnmoveable++;
+      }
+    });
+    if (numUnmoveable !== skills.length) {
+      for (let i = 0; i < 50; ++i) {
+        // find the index of the skill you wanna take a point from
+        let minus = Math.floor(Math.random() * skills.length);
+        // find the index of the skill you wanna add a point to
+        let plus = Math.floor(Math.random() * skills.length);
+        // if you can't take away from a skill, or if you can't add to the skill
+        // then start over
+        if (skills[minus].value < 2 || skills[plus].value > 9) {
+          --i;
+          continue;
+        } else {
+          skills[minus].value--;
+          skills[plus].value++;
+        }
       }
     }
   }
@@ -1023,8 +1032,8 @@ class Enemy {
 class Room {
   constructor(name, enemyArray) {
     this.name = name;
-    enemyArray.forEach((enemyType, difficulty) => {
-      for (let i = 0; i < enemyType; ++i) {
+    enemyArray.forEach((enemyNum, difficulty) => {
+      for (let i = 0; i < enemyNum; ++i) {
         let name = `${difficulty}-${i}`;
         this.addEnemy(new Enemy(name, difficulty));
       }

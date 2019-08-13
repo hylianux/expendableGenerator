@@ -1,19 +1,18 @@
 {
-    "env": {
-        "browser": true,
-        "commonjs": true,
-        "es6": false
-    },
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
-    },
-    "parserOptions": {
-        "ecmaVersion": 2018
-    },
-    "rules": {
-        "semi" : ["error", "always"],
-        "camelcase" : ["off", {"properties":"never"}]
-    }
-
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": false
+  },
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
+  "rules": {
+    "semi": ["error", "always"],
+    "camelcase": ["off", { "properties": "never" }]
+  }
 }
