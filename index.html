@@ -25,8 +25,9 @@
             </div>
           </div>
           <div class="form-row">
-            <label>Enemies: </label> <span><a href="#" data-bind="click: addEnemy" class="btn btn-info" title="Add">Add
-                Enemy Group</a></span>
+            <div class="col-sm-2"><label>Enemies: </label><a href="#" data-bind="click: addEnemy" class="btn btn-info"
+                title="Add">Add
+                Enemy Group</a></div>
             <!-- ko foreach: enemies -->
             <div class="form-group col-sm-1">
               <label data-bind="attr: {for: 'enemy'+$index()}">Difficulty
