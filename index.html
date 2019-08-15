@@ -3,20 +3,65 @@
 
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.js"></script>
 </head>
 
 <body>
-  <div class="container" data-bind="foreach: rooms">
+  <div class="container">
+    <!-- data sending row -->
     <div class="row">
       <div class="col-sm-12">
-        <h3 data-bind="text: name"></h3>
-        <div class="row" data-bind="foreach: enemies">
+        <form>
+          <!-- ko foreach: roomsData-->
+          <div class="form-row">
+            <div class="form-group col-sm-2">
+              <label data-bind="attr: {for: 'name'+$index()}">Room Name: </label>
+              <input type="text" class="form-control" data-bind="textInput: name, attr: {name: 'name'+$index()}" />
+            </div>
+            <div class="form-group col-sm-2">
+              <a href="#" data-bind="click: function(data, event){ $parent.removeRoom($index) }" class="btn btn-danger"
+                title="remove">X</a>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Enemies: </label> <span><a href="#" data-bind="click: addEnemy" class="btn btn-info" title="Add">Add
+                Enemy Group</a></span>
+            <!-- ko foreach: enemies -->
+            <div class="form-group col-sm-1">
+              <label data-bind="attr: {for: 'enemy'+$index()}">Group
+                <!-- ko text: $index -->
+                <!-- /ko --> <a href="#" data-bind="click: function(data, event){ $parent.removeEnemy($index) }"
+                  class="btn btn-danger" title="remove">X</a></label>
+              <input type="number" class="form-control"
+                data-bind="numericValue: $parent.enemies()[$index()], attr: {name: 'enemy'+$index()}" />
+            </div>
+            <!-- /ko -->
+          </div>
+          <!-- /ko -->
+          <div class="form-group">
+            <a href="#" data-bind="click: addRoom" class="btn btn-info" title="Add">Add
+              Room</a>
+            <a href="#" class="btn btn-primary" data-bind="click: submitRooms">Submit</a>
+          </div>
+      </div>
+      </form>
+    </div>
+    <!-- ko foreach: rooms -->
+    <div class="row">
+      <div class="col-sm-12">
+        <h3><a href="#" data-toggle="collapse"
+            data-bind="attr: {'data-target': '#'+name.split(' ').join('')+$index()}, text: name"></a>
+        </h3>
+        <div class="row collapse"
+          data-bind="attr: {id: name.split(' ').join('')+$index()}, class: ($index()===0?'show':'')">
+          <!-- ko foreach: enemies -->
           <div class="col-sm-3 border border-secondary">
             <!-- name and role row-->
             <div class="row">
               <div class="col">
-                <h5>Name: <span data-bind="text: name"></span> Role: <span data-bind="text: role.name"></span></h5>
+                <h5>Name: <span data-bind="text: name"></span> Role: <span data-bind="text: role.name"></span>
+                </h5>
               </div>
             </div>
             <!-- stats row -->
@@ -233,11 +278,16 @@
                       <td class="border border-secondary" style="padding: 0px;" data-bind="text: skill"></td>
                       <td class="border border-secondary" style="padding: 0px;" data-bind="text: accuracy"></td>
                       <td class="border border-secondary" style="padding: 0px;" data-bind="text: damage"></td>
-                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: ammunition"></td>
-                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: numberOfShots"></td>
-                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: rateOfFire"></td>
-                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: reliability"></td>
-                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: range+'m'"></td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: ammunition">
+                      </td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: numberOfShots">
+                      </td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: rateOfFire">
+                      </td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: reliability">
+                      </td>
+                      <td class="border border-secondary" style="padding: 0px;" data-bind="text: range+'m'">
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -245,17 +295,81 @@
               <!-- /ko -->
             </div>
           </div>
+          <!-- /ko -->
         </div>
       </div>
     </div>
+    <!-- /ko -->
   </div>
-  </div>
-  <pre data-bind="text: ko.toJSON($data, null, 2)"></pre>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-min.js"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.0/knockout-debug.js"></script>
   <script>
+    async function sendData(method, url, input) {
+      return new Promise((resolve, reject) => {
+        let request = new XMLHttpRequest();
+        request.open(method, url, true);
+        request.setRequestHeader('Content-Type', 'application/json');
+
+        request.onload = () => {
+          if (request.status >= 200 && request.status < 400) {
+            //Success!
+            resolve(request.response);
+          } else {
+            reject(request.status);
+            console.log(`failed [${request.status}]`);
+          }
+        };
+        request.onerror = () => {
+          reject('some error');
+        };
+        if (input) {
+          request.send(input);
+        } else {
+          request.send();
+        }
+      });
+    }
+
+    function RoomData(name, enemies) {
+      self = this;
+      self.name = ko.observable(name);
+      self.enemies = ko.observableArray();
+      if (enemies) {
+        enemies.forEach(enemy => {
+          self.enemies.push(ko.observable(enemy));
+        });
+      }
+      self.addEnemy = () => {
+        self.enemies.push(ko.observable(0));
+      };
+      self.removeEnemy = index => {
+        self.enemies.splice(index(), 1);
+      }
+    }
     function ViewModel() {
       let self = this;
       self.rooms = ko.observableArray([]);
+      self.roomsData = ko.observableArray([new RoomData('SomeRoomName', [2, 3, 2])]);
+      self.submitRooms = () => {
+        let input = ko.toJSON(self.roomsData);
+        (async () => {
+          let data = [];
+          try {
+            data = await sendData('POST', 'rooms', input);
+          } catch (msg) {
+            console.log(`error! [${msg}]`);
+          } finally {
+            self.rooms(JSON.parse(data));
+          };
+        })();
+      };
+      self.addRoom = () => {
+        self.roomsData.push(new RoomData('', [0]));
+      };
+      self.removeRoom = index => {
+        self.roomsData.splice(index(), 1);
+      };
       self.btm = value => {
         switch (value) {
           case 1:
@@ -279,9 +393,35 @@
             return '-4';
         }
       };
-      $.getJSON('rooms', data => {
-        self.rooms(data);
-      });
+
+      (async () => {
+        let data = [];
+        try {
+          data = await sendData('GET', 'rooms');
+        } catch (msg) {
+          console.log(`error! [${msg}]`);
+        } finally {
+          self.rooms(JSON.parse(data));
+        };
+      })();
+
+    };
+    ko.bindingHandlers.numericValue = {
+      init: function (element, valueAccessor, allBindings, data, context) {
+        var interceptor = ko.computed({
+          read: function () {
+            return ko.unwrap(valueAccessor());
+          },
+          write: function (value) {
+            if (!isNaN(value)) {
+              valueAccessor()(parseFloat(value));
+            }
+          },
+          disposeWhenNodeIsRemoved: element
+        });
+
+        ko.applyBindingsToNode(element, { value: interceptor }, context);
+      }
     };
     ko.applyBindings(new ViewModel());
   </script>

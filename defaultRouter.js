@@ -1,7 +1,8 @@
 'use strict';
 const Router = require('express').Router;
 const path = require('path');
-const Room = require('./roomsGenerator');
+const Room = require('./roomsGenerator').Room;
+const RoomsError = require('./roomsGenerator').RoomsError;
 const defaultRouter = Router();
 
 defaultRouter.get('/', (req, res) => {
@@ -27,6 +28,26 @@ defaultRouter.get('/rooms', (req, res) => {
   } catch (e) {
     console.error('error: ', e);
     res.send('error');
+  }
+});
+
+defaultRouter.post('/rooms', (req, res) => {
+  let roomsData = req.body;
+  if (!(roomsData instanceof Array)) {
+    console.error(`invalid data`, new RoomsError(`invalid data, expected array`, roomsData));
+    res.send(`invalid data`);
+  } else {
+    let rooms = [];
+    try {
+      roomsData.forEach(data => {
+        let room = new Room(data.name, data.enemies);
+        rooms.push(room.serialize());
+      });
+      res.json(rooms);
+    } catch (e) {
+      console.error('error: ', e);
+      res.send('error!');
+    }
   }
 });
 module.exports = defaultRouter;
